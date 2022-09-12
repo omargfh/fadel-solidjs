@@ -1,0 +1,24 @@
+{
+  "name": "fadel",
+  "version": "1.0.0",
+  "description": "Compare multiple images",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "babel-plugin-solid-labels": "^0.12.1",
+    "typescript": "^4.8.2",
+    "unocss": "^0.45.18",
+    "vite": "^3.0.9",
+    "vite-plugin-solid": "^2.3.0"
+  },
+  "dependencies": {
+    "@master/css": "^1.36.0",
+    "@unocss/reset": "^0.45.18",
+    "solid-js": "^1.5.1"
+  }
+}
