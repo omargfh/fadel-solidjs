@@ -38,8 +38,8 @@ export const Viewer: Component = ({}) => {
     viewOffsetTopPerc = (e.offsetY / viewHeight) * 100
     viewOffsetLeftPerc = (e.offsetX / viewWidth) * 100
 
-    contentOffsetTopPerc = ((e.offsetY - contentOffsetTop) / contentHeight) * 100
-    contentOffsetLeftPerc = ((e.screenX - contentOffsetLeft) / contentWidth) * 100
+    contentOffsetTopPerc = ((e.clientY - contentOffsetTop) / contentHeight) * 100
+    contentOffsetLeftPerc = ((e.clientX - contentOffsetLeft) / contentWidth) * 100
 
     if (isDragging) {
       if (lastPoint) {
