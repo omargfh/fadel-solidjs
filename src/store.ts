@@ -41,6 +41,7 @@ onMount(() => {
     try {
       const fields = JSON.parse(atob(fieldsB64))
       updateFields(fields)
+      history.pushState(null, '', '/')
     } catch (e) {
       console.log("Couldn't load fields.")
     }
@@ -51,8 +52,12 @@ const getField = (fieldId: FieldId) => {
   return fields.find((field) => field.id === fieldId)!
 }
 
+const hasLocalFiles = () => {
+  return fields.some((field) => field.isLocal)
+}
+
 const updateField = (fieldId: FieldId, value: Partial<IField>) => {
   updateFields((field) => field.id === fieldId, value)
 }
 
-export { fields, getField, updateField }
+export { fields, getField, hasLocalFiles, updateField }
