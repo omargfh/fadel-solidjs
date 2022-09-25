@@ -35,15 +35,14 @@ const [fields, updateFields] = createStore<IFields>([
 
 onMount(() => {
   const fieldsB64 = new URL(location.href).searchParams.get('fields')
-  console.log(fieldsB64)
 
   if (fieldsB64) {
     try {
-      const fields = JSON.parse(atob(fieldsB64))
+      const fields = JSON.parse(decodeURIComponent(atob(fieldsB64)))
       updateFields(fields)
       history.pushState(null, '', '/')
     } catch (e) {
-      console.log("Couldn't load fields.")
+      console.log("Couldn't load fields: ", e)
     }
   }
 })

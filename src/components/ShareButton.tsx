@@ -12,12 +12,15 @@ export const ShareButton: Component = () => {
   })
 
   const share = async () => {
-    const url = `${location.origin}?fields=${btoa(JSON.stringify(fields))}`
+    const isLocalhost = location.origin.includes('localhost')
+    const url = `${location.origin}?fields=${encodeURIComponent(btoa(JSON.stringify(fields)))}`
     let finalUrl = url
 
     isLoading = true
 
     try {
+      if (isLocalhost) throw 0
+
       const formData = new FormData()
       formData.append('url', url)
 

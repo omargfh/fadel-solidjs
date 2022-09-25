@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, onMount, Show } from 'solid-js'
+import { Component, createEffect, onMount, Show } from 'solid-js'
 
 interface ImgProps {
   imageurl: string
