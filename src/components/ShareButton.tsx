@@ -40,7 +40,7 @@ export const ShareButton: Component = () => {
     <button
       onClick={share}
       type="button"
-      class="text-black  bg-[#ffef5c] hover:bg-[#f5d909] focus:ring-4 focus:ring-[#fbfad0] rounded-lg font-bold text-sm px-5 py-2.5 h-16 grid place-content-center uppercase disabled:!bg-[#a0a0a0] disabled:cursor-not-allowed"
+      class="text-black  bg-[#ffef5c] hover:bg-[#f5d909] focus:ring-4 focus:ring-[#fbfad0] rounded-lg font-bold text-sm px-5 py-1 h-16 grid place-content-center uppercase disabled:!bg-[#a0a0a0] disabled:cursor-not-allowed"
       disabled={isDisabled}
     >
       <Show when={!isLoading} fallback={<div role="status" class="dot-flashing"></div>}>
