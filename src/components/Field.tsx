@@ -48,6 +48,7 @@ export const Field: Component<FieldProps> = ({ id }) => {
       }
 
       if (!local) {
+        reset()
         isUploading = true
         let body = new FormData();
         body.set('key', api_key as string);
