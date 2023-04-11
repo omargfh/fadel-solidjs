@@ -17,6 +17,7 @@ interface FieldProps {
 export const Field: Component<FieldProps> = ({ id }) => {
   const field = getField(id)
   let fileInputRef: HTMLInputElement | undefined
+  let isUploading = $signal(false)
 
   const openFilePicker = () => {
     if (fileInputRef) fileInputRef.click()
@@ -47,6 +48,7 @@ export const Field: Component<FieldProps> = ({ id }) => {
       }
 
       if (!local) {
+        isUploading = true
         let body = new FormData();
         body.set('key', api_key as string);
         body.append('image', file);
@@ -56,6 +58,9 @@ export const Field: Component<FieldProps> = ({ id }) => {
         .catch(err => {
           updateField(id, { label: file.name, imagesrc: URL.createObjectURL(file), isLocal: true })
           alert("Error uploading image to ImageBB. Please check your API key and try again. If the problem persists, please contact the developer.")
+        })
+        .finally(() => {
+          isUploading = false
         })
       }
       else {
@@ -80,6 +85,7 @@ export const Field: Component<FieldProps> = ({ id }) => {
           {/* ---------------------- */}
           {/* Image URL & Local File */}
           {/* ---------------------- */}
+
           <input
             type="text"
             id={field.name}
@@ -113,7 +119,9 @@ export const Field: Component<FieldProps> = ({ id }) => {
             type="submit"
             class="text-black absolute right-2 top-1/2 -translate-y-1/2 bg-[#ededed] hover:bg-[#c7c7c7] focus:ring-4 focus:outline-none focus:ring-white rounded-lg px-2 py-1"
           >
-            <img class="w-6 h-6" src="icons/upload.svg" alt="" />
+            <Show when={!isUploading} fallback={<div role="status" class="dot-flashing mx-3"></div>}>
+              <img class="w-6 h-6" src="icons/upload.svg" alt="" />
+            </Show>
           </button>
 
           <input ref={fileInputRef} onChange={handleFile} type="file" hidden />
