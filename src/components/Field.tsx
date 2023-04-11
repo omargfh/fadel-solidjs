@@ -1,6 +1,14 @@
 import { Component, Show } from 'solid-js'
-import { getField, updateField } from '../store'
+import {
+  getField,
+  updateField,
+  imageBBApiKeyExists,
+  updateImageBBApiKey,
+  clearImageBBApiKey,
+  getImageBBApiKey
+} from '../store'
 import { FieldId } from '../types'
+import axios from 'axios'
 
 interface FieldProps {
   id: FieldId
@@ -23,7 +31,36 @@ export const Field: Component<FieldProps> = ({ id }) => {
     const file = e.currentTarget.files?.[0]
 
     if (file) {
-      updateField(id, { label: file.name, imagesrc: URL.createObjectURL(file), isLocal: true })
+      // Determine if file can be uploaded to ImageBB
+      let local = false
+
+      // Get user API key
+      let api_key = getImageBBApiKey()
+      if (!imageBBApiKeyExists()) {
+        api_key = prompt("Enter your ImageBB API Key:");
+        if (api_key === null || api_key === '') {
+          local = true;
+          clearImageBBApiKey()
+        } else {
+          updateImageBBApiKey(api_key)
+        }
+      }
+
+      if (!local) {
+        let body = new FormData();
+        body.set('key', api_key as string);
+        body.append('image', file);
+        axios.post('https://api.imgbb.com/1/upload', body).then(res => {
+          updateField(id, { label: file.name, imagesrc: res.data.data.url, isLocal: false })
+        })
+        .catch(err => {
+          updateField(id, { label: file.name, imagesrc: URL.createObjectURL(file), isLocal: true })
+          alert("Error uploading image to ImageBB. Please check your API key and try again. If the problem persists, please contact the developer.")
+        })
+      }
+      else {
+        updateField(id, { label: file.name, imagesrc: URL.createObjectURL(file), isLocal: true })
+      }
     }
   }
 

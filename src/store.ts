@@ -1,6 +1,6 @@
 import { onMount } from 'solid-js'
 import { createStore } from 'solid-js/store'
-import { IFields, IField, FieldId } from './types'
+import { IFields, IField, FieldId, IBBAPIParams } from './types'
 
 const [fields, updateFields] = createStore<IFields>([
   {
@@ -30,8 +30,34 @@ const [fields, updateFields] = createStore<IFields>([
     label: '',
     imagesrc: '',
     isLocal: false,
-  },
+  }
 ])
+
+const [ibbApiParams, updateIbbApiParams] = createStore<IBBAPIParams>({ api_key: null });
+
+const getImageBBApiKey = () => {
+  if (localStorage.getItem('fadel-imagebb-api-key') !== null) {
+    updateIbbApiParams({ api_key: localStorage.getItem('fadel-imagebb-api-key')! });
+  }
+  return ibbApiParams.api_key;
+}
+
+const imageBBApiKeyExists = () => {
+  if (localStorage.getItem('fadel-imagebb-api-key') !== null) {
+    updateIbbApiParams({ api_key: localStorage.getItem('fadel-imagebb-api-key')! });
+  }
+  return ibbApiParams.api_key !== null && ibbApiParams.api_key !== '';
+}
+
+const updateImageBBApiKey = (apiKey: string) => {
+  updateIbbApiParams({ api_key: apiKey });
+  localStorage.setItem('fadel-imagebb-api-key', apiKey);
+}
+
+const clearImageBBApiKey = () => {
+  updateIbbApiParams({ api_key: null });
+  localStorage.removeItem('fadel-imagebb-api-key');
+}
 
 onMount(() => {
   const fieldsB64 = new URL(location.href).searchParams.get('fields')
@@ -59,4 +85,4 @@ const updateField = (fieldId: FieldId, value: Partial<IField>) => {
   updateFields((field) => field.id === fieldId, value)
 }
 
-export { fields, getField, hasLocalFiles, updateField }
+export { fields, getField, hasLocalFiles, updateField, updateImageBBApiKey, imageBBApiKeyExists, clearImageBBApiKey, getImageBBApiKey }

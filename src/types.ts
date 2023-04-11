@@ -8,4 +8,8 @@ export interface IField {
   isLocal: boolean
 }
 
+export interface IBBAPIParams {
+  api_key: string | null
+}
+
 export type IFields = IField[]
