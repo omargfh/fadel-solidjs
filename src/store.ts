@@ -45,6 +45,7 @@ const getImageBBApiKey = () => {
 const imageBBApiKeyExists = () => {
   if (localStorage.getItem('fadel-imagebb-api-key') !== null) {
     updateIbbApiParams({ api_key: localStorage.getItem('fadel-imagebb-api-key')! });
+    return true;
   }
   return ibbApiParams.api_key !== null && ibbApiParams.api_key !== '';
 }
