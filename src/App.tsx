@@ -4,7 +4,8 @@ import { ShareButton } from './components/ShareButton'
 import { Viewer } from './components/Viewer'
 import { fields } from './store'
 import { Modal } from './components/Modal'
-import ImageBBKeyButton from './components/ImageBBKeyButton'
+import CloudKeyButton from './components/CloudKeyButton'
+
 const App: Component = () => {
   let mobileSidebarActive = $signal(false)
   return (
@@ -39,7 +40,7 @@ const App: Component = () => {
             <For each={fields}>{(field) => <Field id={field.id} />}</For>
             <div class="flex flex-col gap-5 m-2">
               <ShareButton />
-              <ImageBBKeyButton />
+              <CloudKeyButton />
             </div>
             <div class="text-xs text-gray-400 text-center">
             Created by

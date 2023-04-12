@@ -1,6 +1,7 @@
 import { onMount } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { IFields, IField, FieldId, IBBAPIParams } from './types'
+import { Buffer } from 'buffer'
 
 const [fields, updateFields] = createStore<IFields>([
   {
@@ -33,28 +34,19 @@ const [fields, updateFields] = createStore<IFields>([
   }
 ])
 
-const [ibbApiParams, updateIbbApiParams] = createStore<IBBAPIParams>({ api_key: null });
+onMount(() => {
+  const fieldsB64 = new URL(location.href).searchParams.get('fields')
 
-const getImageBBApiKey = () => {
-  if (localStorage.getItem('fadel-imagebb-api-key') !== null) {
-    updateIbbApiParams({ api_key: localStorage.getItem('fadel-imagebb-api-key')! });
+  if (fieldsB64) {
+    try {
+      const fields = JSON.parse(decodeURIComponent(atob(fieldsB64)))
+      updateFields(fields)
+      history.pushState(null, '', '/')
+    } catch (e) {
+      console.log("Couldn't load fields: ", e)
+    }
   }
-  return ibbApiParams.api_key;
-}
-
-const imageBBApiKeyExists = () => {
-  return ibbApiParams.api_key !== null && ibbApiParams.api_key !== '';
-}
-
-const updateImageBBApiKey = (apiKey: string) => {
-  updateIbbApiParams({ api_key: apiKey });
-  localStorage.setItem('fadel-imagebb-api-key', apiKey);
-}
-
-const clearImageBBApiKey = () => {
-  updateIbbApiParams({ api_key: null });
-  localStorage.removeItem('fadel-imagebb-api-key');
-}
+})
 
 const getField = (fieldId: FieldId) => {
   return fields.find((field) => field.id === fieldId)!
@@ -68,30 +60,80 @@ const updateField = (fieldId: FieldId, value: Partial<IField>) => {
   updateFields((field) => field.id === fieldId, value)
 }
 
-onMount(() => {
-  const fieldsB64 = new URL(location.href).searchParams.get('fields')
-
-  if (fieldsB64) {
-    try {
-      const fields = JSON.parse(decodeURIComponent(atob(fieldsB64)))
-      updateFields(fields)
-      history.pushState(null, '', '/')
-    } catch (e) {
-      console.log("Couldn't load fields: ", e)
+// Settings Store
+type Settings = Record<string, string>
+const [settings, updateSettings] = createStore<Settings>({
+  'initailized': 'false',
+  'touchscreen': 'false',
+  'defaultTo': 'cloud',
+  'cloud_key': '',
+  'cloud_host': 'https://api.imgbb.com/1/upload'
+})
+const saveSettings = () => {
+  // Save to cookies
+  const settingsB64 = Buffer.from(JSON.stringify(settings)).toString('base64')
+  const expires = new Date()
+  expires.setFullYear(expires.getFullYear() + 1)
+  document.cookie = `settings=${settingsB64}; expires=${expires.toUTCString()}; path=/`
+}
+const loadSettings = () => {
+  const settingsCookie = document.cookie.split('; ').find((cookie) => cookie.startsWith('settings='))
+  try {
+    if (settingsCookie) {
+      const settingsB64 = settingsCookie.split('=')[1]
+      const settings = JSON.parse(Buffer.from(settingsB64, 'base64').toString())
+      updateSettings(settings)
     }
   }
+  catch (e) {
+    console.error('Error loading settings', e)
+  }
+}
 
-  // Load API key
-  getImageBBApiKey()
-})
+const setSettingOption = (key: string, value: string) => {
+  if (!settings['initialized']) {
+    loadSettings()
+  }
+  updateSettings({ [key]: value })
+  saveSettings()
+}
+
+const getSettingOption = (key: string) => {
+  return settings[key]
+}
+
+
+const getCloudKey = () => {
+  return settings['cloud_key']
+}
+
+const cloudKeyExists = () => {
+  const cloud_key = settings['cloud_key']
+  return cloud_key !== null && cloud_key !== '';
+}
+
+const updateCloudKey = (apiKey: string) => {
+  setSettingOption('cloud_key', apiKey)
+}
+
+const updateCloudHost = (host: string) => {
+  setSettingOption('cloud_host', host)
+}
+
+const clearCloudKey = () => {
+  setSettingOption('cloud_key', '')
+}
+
 
 export {
   fields,
   getField,
   hasLocalFiles,
   updateField,
-  updateImageBBApiKey,
-  imageBBApiKeyExists,
-  clearImageBBApiKey,
-  getImageBBApiKey
+  clearCloudKey,
+  setSettingOption,
+  getSettingOption,
+  getCloudKey,
+  cloudKeyExists,
+  updateCloudKey,
 }

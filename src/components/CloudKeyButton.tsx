@@ -1,14 +1,18 @@
 import { Component } from "solid-js";
-import { updateImageBBApiKey, clearImageBBApiKey, getImageBBApiKey } from "../store";
+import {
+    getCloudKey,
+    updateCloudKey,
+    clearCloudKey
+} from "../store";
 
-const ImageBBKeyButton: Component<{}> = (props) => {
+const CloudKeyButton: Component<{}> = (props) => {
     return <button
     onClick={() => {
-        let api_key = prompt('Set or clear your API key: ', getImageBBApiKey() ?? '')
+        let api_key = prompt('Set or clear your API key: ', getCloudKey() ?? '')
         if (api_key === null || api_key === '') {
-            clearImageBBApiKey()
+            clearCloudKey()
         } else {
-            updateImageBBApiKey(api_key)
+            updateCloudKey(api_key)
         }
     }}
     type="button"
@@ -16,4 +20,4 @@ const ImageBBKeyButton: Component<{}> = (props) => {
     >Set API Key</button>;
 };
 
-export default ImageBBKeyButton;
+export default CloudKeyButton
