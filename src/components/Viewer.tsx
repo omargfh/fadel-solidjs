@@ -1,4 +1,4 @@
-import { Component } from 'solid-js'
+import { Component, createEffect, onMount } from 'solid-js'
 import { Cursor } from './Cursor'
 import { Label } from './Label'
 import { fields } from '../store'
@@ -22,7 +22,65 @@ export const Viewer: Component = ({}) => {
     y: 0,
   })
 
-  function mouseMove(e: MouseEvent) {
+  let expectsTouch = $signal(false)
+  let isTouch = $signal(false)
+  let lastTouchPoint = $signal<{ x: number; y: number } | null>(null)
+  let isTouchDragging = $signal(false)
+  let fingerCount = $signal(0)
+
+  onMount(() => {
+    // General touch detection
+    if ('ontouchstart' in window) {
+      expectsTouch = true
+    }
+
+    // IE touch detection
+    if (navigator.maxTouchPoints > 0) {
+      expectsTouch = true
+    }
+  })
+
+  createEffect(() => {
+    if (expectsTouch) {
+      document.body.classList.add('touch')
+    } else {
+      document.body.classList.remove('touch')
+    }
+  }, [expectsTouch]);
+
+  interface SimulatedMouseMoveEvent {
+    clientX: number,
+    clientY: number,
+    pageX: number,
+    pageY: number,
+    offsetX: number,
+    offsetY: number,
+  }
+
+  function simulateMouseMovement(e: TouchEvent) {
+    if (!view || !content) return
+    e.stopPropagation()
+    const {
+      left: contentOffsetLeft,
+      top: contentOffsetTop,
+    } = view.getBoundingClientRect()
+
+    const mouseEvent: SimulatedMouseMoveEvent = {
+      clientX: e.touches[0].clientX,
+      clientY: e.touches[0].clientY,
+      pageX: e.touches[0].pageX,
+      pageY: e.touches[0].pageY,
+      offsetX: e.touches[0].clientX - contentOffsetLeft,
+      offsetY: e.touches[0].clientY - contentOffsetTop,
+    }
+
+    if (e.touches.length > 1) {
+      mouseDown()
+    }
+    mouseMove(mouseEvent)
+  }
+
+  function mouseMove(e: MouseEvent | SimulatedMouseMoveEvent) {
     if (!view || !content) return
 
     let viewWidth = view.clientWidth
@@ -93,6 +151,7 @@ export const Viewer: Component = ({}) => {
         onMouseUp={mouseUp}
         onMouseMove={mouseMove}
         onWheel={wheel}
+        onTouchMove={simulateMouseMovement}
       >
         <div class="contents pointer-events-none select-none">
           <$for each={ActiveFields}>{(field) => <Label position={field.id}>{field.label}</Label>}</$for>

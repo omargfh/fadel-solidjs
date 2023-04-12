@@ -43,10 +43,6 @@ const getImageBBApiKey = () => {
 }
 
 const imageBBApiKeyExists = () => {
-  if (localStorage.getItem('fadel-imagebb-api-key') !== null) {
-    updateIbbApiParams({ api_key: localStorage.getItem('fadel-imagebb-api-key')! });
-    return true;
-  }
   return ibbApiParams.api_key !== null && ibbApiParams.api_key !== '';
 }
 
@@ -58,6 +54,18 @@ const updateImageBBApiKey = (apiKey: string) => {
 const clearImageBBApiKey = () => {
   updateIbbApiParams({ api_key: null });
   localStorage.removeItem('fadel-imagebb-api-key');
+}
+
+const getField = (fieldId: FieldId) => {
+  return fields.find((field) => field.id === fieldId)!
+}
+
+const hasLocalFiles = () => {
+  return fields.some((field) => field.isLocal)
+}
+
+const updateField = (fieldId: FieldId, value: Partial<IField>) => {
+  updateFields((field) => field.id === fieldId, value)
 }
 
 onMount(() => {
@@ -72,18 +80,18 @@ onMount(() => {
       console.log("Couldn't load fields: ", e)
     }
   }
+
+  // Load API key
+  getImageBBApiKey()
 })
 
-const getField = (fieldId: FieldId) => {
-  return fields.find((field) => field.id === fieldId)!
+export {
+  fields,
+  getField,
+  hasLocalFiles,
+  updateField,
+  updateImageBBApiKey,
+  imageBBApiKeyExists,
+  clearImageBBApiKey,
+  getImageBBApiKey
 }
-
-const hasLocalFiles = () => {
-  return fields.some((field) => field.isLocal)
-}
-
-const updateField = (fieldId: FieldId, value: Partial<IField>) => {
-  updateFields((field) => field.id === fieldId, value)
-}
-
-export { fields, getField, hasLocalFiles, updateField, updateImageBBApiKey, imageBBApiKeyExists, clearImageBBApiKey, getImageBBApiKey }
