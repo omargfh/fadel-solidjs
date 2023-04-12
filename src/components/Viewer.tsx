@@ -4,6 +4,15 @@ import { Label } from './Label'
 import { fields } from '../store'
 import { Img } from './Image'
 import { FieldId } from '../types'
+import { usePinch } from 'solid-gesture'
+interface SimulatedMouseMoveEvent {
+  clientX: number,
+  clientY: number,
+  pageX: number,
+  pageY: number,
+  offsetX: number,
+  offsetY: number,
+}
 
 export const Viewer: Component = ({}) => {
   let view: HTMLDivElement | undefined
@@ -23,10 +32,7 @@ export const Viewer: Component = ({}) => {
   })
 
   let expectsTouch = $signal(false)
-  let isTouch = $signal(false)
-  let lastTouchPoint = $signal<{ x: number; y: number } | null>(null)
-  let isTouchDragging = $signal(false)
-  let fingerCount = $signal(0)
+  let prevDiff = $signal<number>(0)
 
   onMount(() => {
     // General touch detection
@@ -48,18 +54,12 @@ export const Viewer: Component = ({}) => {
     }
   }, [expectsTouch]);
 
-  interface SimulatedMouseMoveEvent {
-    clientX: number,
-    clientY: number,
-    pageX: number,
-    pageY: number,
-    offsetX: number,
-    offsetY: number,
-  }
 
   function simulateMouseMovement(e: TouchEvent) {
     if (!view || !content) return
+
     e.stopPropagation()
+
     const {
       left: contentOffsetLeft,
       top: contentOffsetTop,
@@ -74,11 +74,33 @@ export const Viewer: Component = ({}) => {
       offsetY: e.touches[0].clientY - contentOffsetTop,
     }
 
-    if (e.touches.length > 1) {
-      mouseDown()
+    if (e.touches.length == 1) {
+      mouseMove(mouseEvent)
     }
-    mouseMove(mouseEvent)
+    else if (e.touches.length == 2) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const x = e.touches[0].clientX - e.touches[1].clientX
+      const y = e.touches[0].clientY - e.touches[1].clientY
+      const diff = Math.sqrt(x * x + y * y)
+
+      if (prevDiff) {
+        const zoomStrength = Math.abs(diff - prevDiff) / 100
+        if (diff > prevDiff) {
+          zoom(1, 1.2)
+        } else {
+          zoom(-1, 1.2)
+        }
+      }
+      prevDiff = diff
+    }
   }
+
+  function simulateMouseUp() {
+    mouseUp()
+  }
+
 
   function mouseMove(e: MouseEvent | SimulatedMouseMoveEvent) {
     if (!view || !content) return
@@ -111,8 +133,8 @@ export const Viewer: Component = ({}) => {
     }
   }
 
-  function zoom(direction: number) {
-    zoomLevel = direction > 0 ? zoomLevel / 1.25 : zoomLevel * 1.25
+  function zoom(direction: number, strength: number = 1.25) {
+    zoomLevel = direction > 0 ? zoomLevel / strength : zoomLevel * strength
   }
 
   function wheel(e: WheelEvent) {
@@ -152,6 +174,8 @@ export const Viewer: Component = ({}) => {
         onMouseMove={mouseMove}
         onWheel={wheel}
         onTouchMove={simulateMouseMovement}
+        onTouchEnd={simulateMouseUp}
+        onTouchCancel={simulateMouseUp}
       >
         <div class="contents pointer-events-none select-none">
           <$for each={ActiveFields}>{(field) => <Label position={field.id}>{field.label}</Label>}</$for>
