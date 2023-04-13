@@ -1,8 +1,8 @@
-import { Component, For, Show } from 'solid-js'
+import { Component, For, onMount, Show } from 'solid-js'
 import { Field } from './components/Field'
 import { ShareButton } from './components/ShareButton'
 import { Viewer } from './components/Viewer'
-import { fields } from './store'
+import { fields, getSettingOption, setSettingOption } from './store'
 import { Modal } from './components/Modal'
 import CloudKeyButton from './components/CloudKeyButton'
 import { settings } from './store'
@@ -11,8 +11,28 @@ import UseCloudButton from './components/UseCloudButton'
 const App: Component = () => {
   let mobileSidebarActive = $signal(false)
   let expectsTouch = $memo(settings.touchscreen === 'true')
+  let isPWA = $memo(settings.pwa === 'true')
+  onMount(() => {
+    // Detect PWA
+    const androidCondition = window.matchMedia('(display-mode: standalone)').matches
+    const iOSCondition = window.navigator.standalone === true
+    if (androidCondition || iOSCondition) {
+      setSettingOption('pwa_mounted', 'true')
+    }
+    else {
+      setSettingOption('pwa_mounted', 'false')
+    }
+  })
+
   return (
     <>
+      <Show when={!(getSettingOption('pwa_mounted') === 'true') && expectsTouch}>
+        {/* prompt user to install */}
+        <div class="fixed bottom-0 left-0 w-full bg-[#24a8e0] text-white text-center py-4 z-200">
+          <div class="text-lg font-bold">Install this app</div>
+          <div class="text-sm">Install this app to use gestures.</div>
+        </div>
+      </Show>
       <div class={`flex flex-row ${expectsTouch ? 'touch' : ''}`}>
         <Show when={expectsTouch}>
           <button

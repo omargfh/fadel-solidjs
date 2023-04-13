@@ -1,10 +1,10 @@
 import { Component, createEffect, onMount } from 'solid-js'
 import { Cursor } from './Cursor'
 import { Label } from './Label'
-import { fields, setSettingOption } from '../store'
+import { fields, getSettingOption, setSettingOption, settings } from '../store'
 import { Img } from './Image'
 import { FieldId } from '../types'
-import { AbstractGesture, RecognizedGesture, recognizeGesture, TouchCollection } from '../gestures'
+import { usePinch, useDrag, useGesture } from 'solid-gesture'
 
 interface SimulatedMouseMoveEvent {
   clientX: number,
@@ -33,7 +33,6 @@ export const Viewer: Component = ({}) => {
   })
 
   let expectsTouch = $signal(false)
-  let touches = $signal<TouchCollection[]>([])
 
   onMount(() => {
     // General touch detection
@@ -57,9 +56,12 @@ export const Viewer: Component = ({}) => {
 
 
   function simulateMouseMovement(e: TouchEvent) {
+    if (e.touches.length === 1) {
+      e.preventDefault()
+      e.stopPropagation()
+      e.stopImmediatePropagation()
+    }
     if (!view || !content) return
-
-    e.stopPropagation()
 
     const {
       left: contentOffsetLeft,
@@ -78,42 +80,50 @@ export const Viewer: Component = ({}) => {
     if (e.touches.length == 1) {
       mouseMove(mouseEvent)
     }
-    else if (e.touches.length == 2) {
-      touches.push({
-        touches: [{
-          x: e.touches[0].clientX,
-          y: e.touches[0].clientY
-        }, {
-          x: e.touches[1].clientX,
-          y: e.touches[1].clientY
-        }],
-        length: 2
-      })
-
-      if (touches.length == 2) {
-        const gesture: RecognizedGesture = recognizeGesture({
-          touchCollections: touches,
-          length: 2
-        } as AbstractGesture)
-
-        if (gesture) {
-          if (gesture.gesture == 'pinch') {
-            zoom(gesture.direction === 'out' ? 1 : 0, gesture.magnitude)
-          }
-          else {
-            mouseDown()
+  }
+  const binders = useGesture(
+    {
+      onDrag: ({ active, delta, touches, event }) => {
+        if (touches === 1) {
+          simulateMouseMovement(event as TouchEvent)
+        }
+        if (touches === 2 && active) {
+          contentTranslate = {
+            x: contentTranslate.x + delta[0] / zoomLevel,
+            y: contentTranslate.y + delta[1] / zoomLevel,
           }
         }
-
-        touches = []
+      },
+      onPinch: ({ active, offset: [scale], pinching, touches}) => {
+        if (touches === 2 && active && pinching) {
+          zoomLevel = scale;
+          return;
+        }
       }
-    }
-  }
+    }, {
+      eventOptions: {
+        passive: false,
+      },
+      drag: {
+        filterTaps: true,
+        threshold: 10,
+        pointer: { touch: true },
+      },
+      pinch: {
+        pointer: { touch: true },
+      }
+    })
 
-  function simulateMouseUp() {
-    mouseUp()
-  }
-
+    const noPWABinders = useDrag(({ active, delta, touches, event }) => {
+      if (touches === 1) {
+        simulateMouseMovement(event as TouchEvent)
+      }
+    }, {
+      eventOptions: {
+        passive: false,
+      },
+      pointer: { touch: true }
+    })
 
   function mouseMove(e: MouseEvent | SimulatedMouseMoveEvent) {
     if (!view || !content) return
@@ -158,6 +168,7 @@ export const Viewer: Component = ({}) => {
   }
 
   function mouseDown() {
+    if (expectsTouch) return
     isDragging = true
   }
 
@@ -186,9 +197,7 @@ export const Viewer: Component = ({}) => {
         onMouseUp={mouseUp}
         onMouseMove={mouseMove}
         onWheel={wheel}
-        onTouchMove={simulateMouseMovement}
-        onTouchEnd={simulateMouseUp}
-        onTouchCancel={simulateMouseUp}
+        {...((getSettingOption('pwa_mounted') === 'true' && expectsTouch) ? binders() : noPWABinders())}
       >
         <div class="contents pointer-events-none select-none">
           <$for each={ActiveFields}>{(field) => <Label position={field.id}>{field.label}</Label>}</$for>

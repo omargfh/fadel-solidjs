@@ -66,7 +66,8 @@ const [settings, updateSettings] = createStore<Settings>({
   'touchscreen': 'false',
   'use_cloud': 'true',
   'cloud_key': '',
-  'cloud_host': 'https://api.imgbb.com/1/upload'
+  'cloud_host': 'https://api.imgbb.com/1/upload',
+  'pwa_mounted': 'false'
 })
 const saveSettings = () => {
   // Save to cookies
