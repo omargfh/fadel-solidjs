@@ -68,12 +68,20 @@ const App: Component = () => {
               <ShareButton />
               <CloudKeyButton />
             </div>
-            <div class="text-xs text-gray-400 text-center">
-            Created by
-            <a class="underline underline-offset-4 ml-1" href="https://github.com/SamyzKhalil" target="_blank">
-              Abdelrahman Khalil
-            </a>
-          </div>
+            <div class="text-xs text-gray-400 text-center flex flex-col gap-2">
+              <span>
+                Created by
+                <a class="underline underline-offset-4 ml-1" href="https://github.com/SamyzKhalil" target="_blank">
+                  Abdelrahman Khalil
+                </a>
+              </span>
+              <span>
+                V1.1 by
+                <a class="underline underline-offset-4 ml-1" href="https://github.com/omargfh" target="_blank">
+                  Omar Ibrahim
+                </a>
+              </span>
+            </div>
           </div>
         </div>
 
