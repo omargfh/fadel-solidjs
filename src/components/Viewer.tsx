@@ -156,8 +156,8 @@ export const Viewer: Component = ({}) => {
     }
   }
 
-  function zoom(direction: number, strength: number = 1.25) {
-    zoomLevel = direction > 0 ? zoomLevel / strength : zoomLevel * strength
+  function zoom(direction: number) {
+    zoomLevel = direction > 0 ? zoomLevel + .04 : zoomLevel - .04
   }
 
   function wheel(e: WheelEvent) {
