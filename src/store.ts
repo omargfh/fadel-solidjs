@@ -1,7 +1,6 @@
 import { onMount } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { IFields, IField, FieldId, IBBAPIParams } from './types'
-import { Buffer } from 'buffer'
 
 const [fields, updateFields] = createStore<IFields>([
   {
@@ -71,7 +70,7 @@ const [settings, updateSettings] = createStore<Settings>({
 })
 const saveSettings = () => {
   // Save to cookies
-  const settingsB64 = Buffer.from(JSON.stringify(settings)).toString('base64')
+  const settingsB64 = btoa(encodeURIComponent(JSON.stringify(settings)))
   const expires = new Date()
   expires.setFullYear(expires.getFullYear() + 1)
   document.cookie = `settings=${settingsB64}; expires=${expires.toUTCString()}; path=/`
@@ -81,7 +80,7 @@ const loadSettings = () => {
   try {
     if (settingsCookie) {
       const settingsB64 = settingsCookie.split('=')[1]
-      const settings = JSON.parse(Buffer.from(settingsB64, 'base64').toString())
+      const settings = JSON.parse(decodeURIComponent(atob(settingsB64)))
       updateSettings(settings)
       updateSettings({'initialized': 'true' })
     }
