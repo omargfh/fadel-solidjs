@@ -1,10 +1,11 @@
 import { Component, createEffect, onMount } from 'solid-js'
 import { Cursor } from './Cursor'
 import { Label } from './Label'
-import { fields } from '../store'
+import { fields, setSettingOption } from '../store'
 import { Img } from './Image'
 import { FieldId } from '../types'
-import { usePinch } from 'solid-gesture'
+import { AbstractGesture, RecognizedGesture, recognizeGesture, TouchCollection } from '../gestures'
+
 interface SimulatedMouseMoveEvent {
   clientX: number,
   clientY: number,
@@ -32,7 +33,7 @@ export const Viewer: Component = ({}) => {
   })
 
   let expectsTouch = $signal(false)
-  let prevDiff = $signal<number>(0)
+  let touches = $signal<TouchCollection[]>([])
 
   onMount(() => {
     // General touch detection
@@ -48,9 +49,9 @@ export const Viewer: Component = ({}) => {
 
   createEffect(() => {
     if (expectsTouch) {
-      document.body.classList.add('touch')
+      setSettingOption('touchscreen', 'true')
     } else {
-      document.body.classList.remove('touch')
+      setSettingOption('touchscreen', 'false')
     }
   }, [expectsTouch]);
 
@@ -78,22 +79,34 @@ export const Viewer: Component = ({}) => {
       mouseMove(mouseEvent)
     }
     else if (e.touches.length == 2) {
-      e.stopPropagation();
-      e.preventDefault();
+      touches.push({
+        touches: [{
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY
+        }, {
+          x: e.touches[1].clientX,
+          y: e.touches[1].clientY
+        }],
+        length: 2
+      })
 
-      const x = e.touches[0].clientX - e.touches[1].clientX
-      const y = e.touches[0].clientY - e.touches[1].clientY
-      const diff = Math.sqrt(x * x + y * y)
+      if (touches.length == 2) {
+        const gesture: RecognizedGesture = recognizeGesture({
+          touchCollections: touches,
+          length: 2
+        } as AbstractGesture)
 
-      if (prevDiff) {
-        const zoomStrength = Math.abs(diff - prevDiff) / 100
-        if (diff > prevDiff) {
-          zoom(1, 1.2)
-        } else {
-          zoom(-1, 1.2)
+        if (gesture) {
+          if (gesture.gesture == 'pinch') {
+            zoom(gesture.direction === 'out' ? 1 : 0, gesture.magnitude)
+          }
+          else {
+            mouseDown()
+          }
         }
+
+        touches = []
       }
-      prevDiff = diff
     }
   }
 

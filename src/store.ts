@@ -63,9 +63,9 @@ const updateField = (fieldId: FieldId, value: Partial<IField>) => {
 // Settings Store
 type Settings = Record<string, string>
 const [settings, updateSettings] = createStore<Settings>({
-  'initailized': 'false',
+  'initialized': 'false',
   'touchscreen': 'false',
-  'defaultTo': 'cloud',
+  'use_cloud': 'true',
   'cloud_key': '',
   'cloud_host': 'https://api.imgbb.com/1/upload'
 })
@@ -83,6 +83,7 @@ const loadSettings = () => {
       const settingsB64 = settingsCookie.split('=')[1]
       const settings = JSON.parse(Buffer.from(settingsB64, 'base64').toString())
       updateSettings(settings)
+      updateSettings({'initialized': 'true' })
     }
   }
   catch (e) {
@@ -136,4 +137,5 @@ export {
   getCloudKey,
   cloudKeyExists,
   updateCloudKey,
+  settings
 }

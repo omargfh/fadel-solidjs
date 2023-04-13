@@ -20,7 +20,7 @@ body {
   display: none;
 }
 
-.touch .sidebar-button {
+.sidebar-button {
   display: block;
   position: fixed;
   top: 0.5rem;
@@ -32,6 +32,11 @@ body {
   transition: transform 0.3s ease-in-out;
 }
 
-.touch .sidebar-button.open {
+.sidebar-button.open {
   transform: translateX(350px);
+}
+
+.after-content::after {
+  content: "";
+  display: block;
 }

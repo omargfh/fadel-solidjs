@@ -10,7 +10,6 @@ import {
 } from '../store'
 import { FieldId } from '../types'
 import axios from 'axios'
-
 interface FieldProps {
   id: FieldId
 }
@@ -34,11 +33,11 @@ export const Field: Component<FieldProps> = ({ id }) => {
 
     if (file) {
       // Determine if file can be uploaded to ImageBB
-      let local = false
+      let local = getSettingOption('use_cloud') === 'false'
 
       // Get user API key
       let api_key: string | null = getCloudKey()
-      if (!cloudKeyExists()) {
+      if (!local && !cloudKeyExists()) {
         api_key = prompt("Enter your ImageBB API Key:");
         if (api_key === null || api_key === '') {
           local = true;

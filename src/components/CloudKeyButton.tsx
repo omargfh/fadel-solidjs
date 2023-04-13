@@ -9,7 +9,7 @@ const CloudKeyButton: Component<{}> = (props) => {
     return <button
     onClick={() => {
         let api_key = prompt('Set or clear your API key: ', getCloudKey() ?? '')
-        if (api_key === null || api_key === '') {
+        if (api_key === '') {
             clearCloudKey()
         } else {
             updateCloudKey(api_key)
