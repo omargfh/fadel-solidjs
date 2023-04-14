@@ -12,6 +12,7 @@ const App: Component = () => {
   let mobileSidebarActive = $signal(false)
   let expectsTouch = $memo(settings.touchscreen === 'true')
   let isPWA = $memo(settings.pwa === 'true')
+  let installPromptDismissed = $signal(false)
   onMount(() => {
     // Detect PWA
     const androidCondition = window.matchMedia('(display-mode: standalone)').matches
@@ -26,11 +27,14 @@ const App: Component = () => {
 
   return (
     <>
-      <Show when={!(getSettingOption('pwa_mounted') === 'true') && expectsTouch}>
+      <Show when={!(getSettingOption('pwa_mounted') === 'true') && expectsTouch && !installPromptDismissed}>
         {/* prompt user to install */}
         <div class="fixed bottom-0 left-0 w-full bg-[#24a8e0] text-white text-center py-4 z-200">
           <div class="text-lg font-bold">Install this app</div>
           <div class="text-sm">Install this app to use gestures.</div>
+          <button class="bg-[#fbfad0] text-black font-bold text-sm px-4 py-2 rounded-lg mt-2" onClick={() => {
+            installPromptDismissed = true
+          }}>Dismiss</button>
         </div>
       </Show>
       <div class={`flex flex-row ${expectsTouch ? 'touch' : ''}`}>

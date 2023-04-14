@@ -34,5 +34,4 @@ body {
 
 .after-content::after {
   content: "";
-  display: block;
 }
