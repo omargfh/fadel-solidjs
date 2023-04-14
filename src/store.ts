@@ -33,20 +33,6 @@ const [fields, updateFields] = createStore<IFields>([
   }
 ])
 
-onMount(() => {
-  const fieldsB64 = new URL(location.href).searchParams.get('fields')
-
-  if (fieldsB64) {
-    try {
-      const fields = JSON.parse(decodeURIComponent(atob(fieldsB64)))
-      updateFields(fields)
-      history.pushState(null, '', '/')
-    } catch (e) {
-      console.log("Couldn't load fields: ", e)
-    }
-  }
-})
-
 const getField = (fieldId: FieldId) => {
   return fields.find((field) => field.id === fieldId)!
 }
@@ -70,21 +56,13 @@ const [settings, updateSettings] = createStore<Settings>({
   'pwa_mounted': 'false'
 })
 const saveSettings = () => {
-  // Save to cookies
-  const settingsB64 = btoa(encodeURIComponent(JSON.stringify(settings)))
-  const expires = new Date()
-  expires.setFullYear(expires.getFullYear() + 1)
-  document.cookie = `settings=${settingsB64}; expires=${expires.toUTCString()}; path=/`
+  // Save to localstorage
+  localStorage.setItem('fadel-web-settings', JSON.stringify({...settings, 'updated_at': new Date().toISOString()}))
 }
 const loadSettings = () => {
-  const settingsCookie = document.cookie.split('; ').find((cookie) => cookie.startsWith('settings='))
   try {
-    if (settingsCookie) {
-      const settingsB64 = settingsCookie.split('=')[1]
-      const settings = JSON.parse(decodeURIComponent(atob(settingsB64)))
-      updateSettings(settings)
-      updateSettings({'initialized': 'true' })
-    }
+    const settings = JSON.parse(localStorage.getItem('fadel-web-settings') || '{}')
+    updateSettings(settings)
   }
   catch (e) {
     console.error('Error loading settings', e)
@@ -124,6 +102,24 @@ const updateCloudHost = (host: string) => {
 const clearCloudKey = () => {
   setSettingOption('cloud_key', '')
 }
+
+onMount(() => {
+  const fieldsB64 = new URL(location.href).searchParams.get('fields')
+
+  if (fieldsB64) {
+    try {
+      const fields = JSON.parse(decodeURIComponent(atob(fieldsB64)))
+      updateFields(fields)
+      history.pushState(null, '', '/')
+    } catch (e) {
+      console.log("Couldn't load fields: ", e)
+    }
+  }
+
+  // Load settings
+  loadSettings()
+})
+
 
 
 export {

@@ -32,10 +32,6 @@ body {
   transition: transform 0.3s ease-in-out;
 }
 
-.sidebar-button.open {
-  transform: translateX(350px);
-}
-
 .after-content::after {
   content: "";
   display: block;
