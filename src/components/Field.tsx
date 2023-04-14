@@ -6,7 +6,8 @@ import {
   updateCloudKey,
   cloudKeyExists,
   clearCloudKey,
-  getSettingOption
+  getSettingOption,
+  addToField
 } from '../store'
 import { FieldId } from '../types'
 import axios from 'axios'
@@ -23,50 +24,17 @@ export const Field: Component<FieldProps> = ({ id }) => {
     if (fileInputRef) fileInputRef.click()
   }
 
-  const handleFile = (
+  const handleFile = async (
     e: Event & {
       currentTarget: HTMLInputElement
       target: Element
     }
   ) => {
     const file = e.currentTarget.files?.[0]
-
     if (file) {
-      // Determine if file can be uploaded to ImageBB
-      let local = getSettingOption('use_cloud') === 'false'
-
-      // Get user API key
-      let api_key: string | null = getCloudKey()
-      if (!local && !cloudKeyExists()) {
-        api_key = prompt("Enter your ImageBB API Key:");
-        if (api_key === null || api_key === '') {
-          local = true;
-          clearCloudKey()
-        } else {
-          updateCloudKey(api_key)
-        }
-      }
-
-      if (!local) {
-        reset()
-        isUploading = true
-        let body = new FormData();
-        body.set('key', api_key as string);
-        body.append('image', file);
-        axios.post(getSettingOption('cloud_host'), body).then(res => {
-          updateField(id, { label: file.name, imagesrc: res.data.data.url, isLocal: false })
-        })
-        .catch(err => {
-          updateField(id, { label: file.name, imagesrc: URL.createObjectURL(file), isLocal: true })
-          alert("Error uploading image to ImageBB. Please check your API key and try again. If the problem persists, please contact the developer.")
-        })
-        .finally(() => {
-          isUploading = false
-        })
-      }
-      else {
-        updateField(id, { label: file.name, imagesrc: URL.createObjectURL(file), isLocal: true })
-      }
+      isUploading = true
+      await addToField(id, file)
+      isUploading = false
     }
   }
 

@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { onMount } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { IFields, IField, FieldId, IBBAPIParams } from './types'
@@ -43,6 +44,43 @@ const hasLocalFiles = () => {
 
 const updateField = (fieldId: FieldId, value: Partial<IField>) => {
   updateFields((field) => field.id === fieldId, value)
+}
+
+const addToField = async (fieldId: FieldId, file: File) => {
+  if (file) {
+    // Determine if file can be uploaded to ImageBB
+    let local = getSettingOption('use_cloud') === 'false'
+
+    // Get user API key
+    let api_key: string | null = getCloudKey()
+    if (!local && !cloudKeyExists()) {
+      api_key = prompt("Enter your ImageBB API Key:");
+      if (api_key === null || api_key === '') {
+        local = true;
+        clearCloudKey()
+      } else {
+        updateCloudKey(api_key)
+      }
+    }
+
+    if (!local) {
+      // Reset field if possible
+      updateField(fieldId, { label: '', imagesrc: '', isLocal: false })
+      let body = new FormData();
+      body.set('key', api_key as string);
+      body.append('image', file);
+      await axios.post(getSettingOption('cloud_host'), body).then(res => {
+        updateField(fieldId, { label: file.name, imagesrc: res.data.data.url, isLocal: false })
+      })
+      .catch(err => {
+        updateField(fieldId, { label: file.name, imagesrc: URL.createObjectURL(file), isLocal: true })
+        alert("Error uploading image to ImageBB. Please check your API key and try again. If the problem persists, please contact the developer.")
+      })
+    }
+    else {
+      updateField(fieldId, { label: file.name, imagesrc: URL.createObjectURL(file), isLocal: true })
+    }
+  }
 }
 
 // Settings Store
@@ -127,6 +165,7 @@ export {
   getField,
   hasLocalFiles,
   updateField,
+  addToField,
   clearCloudKey,
   setSettingOption,
   getSettingOption,

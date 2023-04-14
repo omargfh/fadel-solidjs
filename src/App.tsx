@@ -2,17 +2,57 @@ import { Component, For, onMount, Show } from 'solid-js'
 import { Field } from './components/Field'
 import { ShareButton } from './components/ShareButton'
 import { Viewer } from './components/Viewer'
-import { fields, getSettingOption, setSettingOption } from './store'
+import { fields, getSettingOption, setSettingOption, updateField } from './store'
 import { Modal } from './components/Modal'
 import CloudKeyButton from './components/CloudKeyButton'
 import { settings } from './store'
 import UseCloudButton from './components/UseCloudButton'
+import isDragSourceExternalFile from './filedrag'
+import { addToField } from './store'
 
 const App: Component = () => {
   let mobileSidebarActive = $signal(false)
   let expectsTouch = $memo(settings.touchscreen === 'true')
-  let isPWA = $memo(settings.pwa === 'true')
   let installPromptDismissed = $signal(false)
+  let areFilesBeingDragged = $signal(false)
+  let areFilesUploading = $signal(false)
+
+  const fileDragBinder = () => {
+    const dragEnter = (e: DragEvent) => {
+      let hasFiles = isDragSourceExternalFile(e.dataTransfer)
+      if (hasFiles) {
+        e.preventDefault()
+        areFilesBeingDragged = true
+      }
+    }
+    const drop = async (e: DragEvent) => {
+      let hasFiles = isDragSourceExternalFile(e.dataTransfer)
+      e.preventDefault()
+      if (hasFiles && e.dataTransfer) {
+        areFilesUploading = true
+        for (const file of e.dataTransfer.files) {
+          for (const field of fields) {
+            if (!(field.imagesrc)) {
+              await addToField(field.id, file)
+              break
+            }
+          }
+        }
+      }
+      areFilesUploading = false
+      areFilesBeingDragged = false
+    }
+    return {
+      ondragenter: dragEnter,
+      ondragover: (e: DragEvent) => e.preventDefault(),
+      ondragleave: (e: DragEvent) => {
+        if (e.currentTarget && e.currentTarget.contains(e.relatedTarget)) return;
+        areFilesBeingDragged = false
+      },
+      ondrop: drop
+    }
+  }
+
   onMount(() => {
     // Detect PWA
     const androidCondition = window.matchMedia('(display-mode: standalone)').matches
@@ -26,7 +66,18 @@ const App: Component = () => {
   })
 
   return (
-    <>
+    <div id="app-controller"
+      {...fileDragBinder()}
+    >
+      <Show when={areFilesBeingDragged}>
+        <div class="w-screen h-screen absolute bg-white bg-opacity-10 h-full z-100 top-0 left-0 flex flex-col justify-center place-content-center items-center">
+          <div class="w-98/100 h-98/100 flex flex-col justify-center items-center border-2 border-dashed border-[#ddd] opacity-50 rounded-lg">
+            <Show when={areFilesUploading} fallback={<div class="text-2xl font-bold text-center text-white">Drop files here</div>}>
+              <div class="text-2xl font-bold text-center text-white">Uploading <span class="animate-pulse">...</span></div>
+            </Show>
+          </div>
+        </div>
+      </Show>
       <Show when={!(getSettingOption('pwa_mounted') === 'true') && expectsTouch && !installPromptDismissed}>
         {/* prompt user to install */}
         <div class="fixed bottom-0 left-0 w-full bg-[#24a8e0] text-white text-center py-4 z-200">
@@ -91,7 +142,7 @@ const App: Component = () => {
 
         <Viewer />
       </div>
-    </>
+    </div>
   )
 }
 
