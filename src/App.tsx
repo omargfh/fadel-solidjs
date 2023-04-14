@@ -40,7 +40,7 @@ const App: Component = () => {
       <div class={`flex flex-row ${expectsTouch ? 'touch' : ''}`}>
         <Show when={expectsTouch}>
           <button
-            class={`sidebar-button ${mobileSidebarActive ? 'translate-x-[200px] sm:translate-x-[250px] md:translate-x-[450px] lg:translate-x-[4 50px]' : ''} text-black bg-[#24a8e0] focus:ring-4 focus:ring-[#fbfad0] rounded-lg font-bold text-sm px-0 py-1 h-16 grid place-content-center uppercase disabled:!bg-[#a0a0a0] disabled:cursor-not-allowed`}
+            class={`sidebar-button ${mobileSidebarActive ? 'translate-x-[200px] sm:translate-x-[300px] md:translate-x-[450px] lg:translate-x-[4 50px]' : ''} text-black bg-[#24a8e0] focus:ring-4 focus:ring-[#fbfad0] rounded-lg font-bold text-sm px-0 py-1 h-16 grid place-content-center uppercase disabled:!bg-[#a0a0a0] disabled:cursor-not-allowed`}
             onClick={() => { mobileSidebarActive = !mobileSidebarActive }}
           >
             <Show when={!mobileSidebarActive} fallback={
@@ -64,7 +64,7 @@ const App: Component = () => {
             </Show>
           </button>
         </Show>
-        <div id="sidebar" class={`container flex flex-col justify-between p-4 w-[200px] sm:w-[250px] md:w-[450px] lg:w-[450px] overflow-auto h-screen gap-0 ${mobileSidebarActive ? 'translate-x-0 open' : ''}`}>
+        <div id="sidebar" class={`container flex flex-col justify-between p-4 w-[200px] sm:w-[300px] md:w-[450px] lg:w-[450px] overflow-auto h-screen gap-0 ${mobileSidebarActive ? 'translate-x-0 open' : ''}`}>
           <div class="grid gap-8 md:grid-rows-0"> {/* changed from md:grid-cols-5 to md:grid-rows-0 */}
             <For each={fields}>{(field) => <Field id={field.id} />}</For>
             <div class="flex flex-col gap-5 m-2">
