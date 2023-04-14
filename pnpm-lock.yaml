@@ -10,9 +10,6 @@ dependencies:
   '@unocss/reset':
     specifier: ^0.45.18
     version: 0.45.18
-  Buffer:
-    specifier: ^0.0.0
-    version: 0.0.0
   axios:
     specifier: ^1.3.5
     version: 1.3.5
@@ -1763,11 +1760,6 @@ packages:
 
   /@use-gesture/core@10.2.26:
     resolution: {integrity: sha512-NyFpQ3iID9iFBROXyyvU1D0NK+t+dP+WAVByhCvqHUenpxLD2NlRLVRpoK3XGGwksr6mU3PvZ2Nm4q0q+gLJPA==}
-    dev: false
-
-  /Buffer@0.0.0:
-    resolution: {integrity: sha512-+zdncl8lI5TCkARStn9F1BwcuJYofYmD0oEHe5FNfCvGfeDJwf6+dSikCdQN6BMXXmHMhNNUagBN367WST1AIQ==}
-    engines: {node: '>= 0.2.0'}
     dev: false
 
   /acorn@8.8.0:
