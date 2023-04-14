@@ -4,15 +4,30 @@ dependencies:
   '@master/css':
     specifier: ^1.36.0
     version: 1.36.0
+  '@types/hammerjs':
+    specifier: ^2.0.41
+    version: 2.0.41
   '@unocss/reset':
     specifier: ^0.45.18
     version: 0.45.18
   axios:
     specifier: ^1.3.5
     version: 1.3.5
+  hammer:
+    specifier: ^0.0.5
+    version: 0.0.5
+  hammerjs:
+    specifier: ^2.0.8
+    version: 2.0.8
+  solid-gesture:
+    specifier: ^0.0.3
+    version: 0.0.3(solid-js@1.5.1)
   solid-js:
     specifier: ^1.5.1
     version: 1.5.1
+  touch-pinch:
+    specifier: ^1.0.1
+    version: 1.0.1
 
 devDependencies:
   babel-plugin-solid-labels:
@@ -1575,6 +1590,10 @@ packages:
     resolution: {integrity: sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==}
     dev: true
 
+  /@types/hammerjs@2.0.41:
+    resolution: {integrity: sha512-ewXv/ceBaJprikMcxCmWU1FKyMAQ2X7a9Gtmzw8fcg2kIePI1crERDM818W+XYrxqdBBOdlf2rm137bU+BltCA==}
+    dev: false
+
   /@types/node@18.7.23:
     resolution: {integrity: sha512-DWNcCHolDq0ZKGizjx2DZjR/PqsYwAcYUJmfMWqtVU2MBMG5Mo+xFZrhGId5r/O5HOuMPyQEcM6KUBp5lBZZBg==}
     dev: true
@@ -1738,6 +1757,10 @@ packages:
       magic-string: 0.26.3
       vite: 3.1.3
     dev: true
+
+  /@use-gesture/core@10.2.26:
+    resolution: {integrity: sha512-NyFpQ3iID9iFBROXyyvU1D0NK+t+dP+WAVByhCvqHUenpxLD2NlRLVRpoK3XGGwksr6mU3PvZ2Nm4q0q+gLJPA==}
+    dev: false
 
   /acorn@8.8.0:
     resolution: {integrity: sha512-QOxyigPVrpZ2GXT+PFyZTl6TtOFc5egxHIP9IlQ+RbupQuX4RkT/Bee4/kQuC02Xkzg84JcT7oLYtDIQxp+v7w==}
@@ -2114,6 +2137,10 @@ packages:
     resolution: {integrity: sha512-QqkneF8LrYmwATMdnuD2MLI3GHQIcBnG6qFC2q9bSH430VTCDAVjcspPmUaKhPGtAtPAftIUFqY1obQYQuwmbg==}
     dev: true
 
+  /dprop@1.0.0:
+    resolution: {integrity: sha512-CNrGk9cBoRzsLtyGRTcjsYh0n63nLtnWelCV31DlEK/yftX05rLK7qb9et891DYLUwhadlh/lOxq7W/+8XA2pQ==}
+    dev: false
+
   /duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
     dev: true
@@ -2406,6 +2433,11 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /events@1.1.1:
+    resolution: {integrity: sha512-kEcvvCBByWXGnZy6JUlgAp2gBIUjfCAV6P6TgT1/aaQKcmuAEC4OZTV1I4EWQLz2gxZw76atuVyvHhTxvi0Flw==}
+    engines: {node: '>=0.4.x'}
+    dev: false
+
   /execa@5.1.1:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
@@ -2556,6 +2588,10 @@ packages:
       get-intrinsic: 1.1.3
     dev: true
 
+  /gl-vec2@1.3.0:
+    resolution: {integrity: sha512-YiqaAuNsheWmUV0Sa8k94kBB0D6RWjwZztyO+trEYS8KzJ6OQB/4686gdrf59wld4hHFIvaxynO3nRxpk1Ij/A==}
+    dev: false
+
   /glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
     engines: {node: '>= 6'}
@@ -2589,6 +2625,16 @@ packages:
     dependencies:
       duplexer: 0.1.2
     dev: true
+
+  /hammer@0.0.5:
+    resolution: {integrity: sha512-mdGMKdrHiO1QVY7A+514ZtoaujioWjd8LT1DQpKMsgGke1JmmSvbywgbOWFRRmSfGupcSGra1N9fvFXNtwXb+Q==}
+    hasBin: true
+    dev: false
+
+  /hammerjs@2.0.8:
+    resolution: {integrity: sha512-tSQXBXS/MWQOn/RKckawJ61vvsDpCom87JgxiYdGwHdOa0ht0vzUWDlfioofFCRU0L+6NGDt6XzbgoJvZkMeRQ==}
+    engines: {node: '>=0.8.0'}
+    dev: false
 
   /has-bigints@1.0.2:
     resolution: {integrity: sha512-tSvCKtBr9lkF0Ex0aQiP9N+OpV4zi2r/Nee5VkRDbaqv35RLYMzbwQfFSZZH0kR+Rd6302UJZ2p/bJCEoR3VoQ==}
@@ -2964,6 +3010,10 @@ packages:
       brace-expansion: 2.0.1
     dev: true
 
+  /mouse-event-offset@3.0.2:
+    resolution: {integrity: sha512-s9sqOs5B1Ykox3Xo8b3Ss2IQju4UwlW6LSR+Q5FXWpprJ5fzMLefIIItr3PH8RwzfGy6gxs/4GAmiNuZScE25w==}
+    dev: false
+
   /mrmime@1.0.1:
     resolution: {integrity: sha512-hzzEagAgDyoU1Q6yg5uI+AorQgdvMCur3FcKf7NhMKWsaYg+RnbTyHRa/9IlLF9rf455MOCtcqqrQQ83pPP7Uw==}
     engines: {node: '>=10'}
@@ -3298,6 +3348,15 @@ packages:
       totalist: 3.0.0
     dev: true
 
+  /solid-gesture@0.0.3(solid-js@1.5.1):
+    resolution: {integrity: sha512-7vbhm+eYXXqr0y9/uVMHknscn9THHozx4wA0SEUwVsRjEPUd1Y9BKWDaG2s+GZafAEEucr7bWsMQKb49c0X1Fw==}
+    peerDependencies:
+      solid-js: '>=1.4.0'
+    dependencies:
+      '@use-gesture/core': 10.2.26
+      solid-js: 1.5.1
+    dev: false
+
   /solid-js@1.5.1:
     resolution: {integrity: sha512-Y6aKystIxnrB0quV5nhqNuJV+l2Fk3/PQy1mMya/bzxlGiMHAym7v1NaqEgqDIvctbkxOi5dBj0ER/ewrH060g==}
     dependencies:
@@ -3451,6 +3510,15 @@ packages:
     resolution: {integrity: sha512-eM+pCBxXO/njtF7vdFsHuqb+ElbxqtI4r5EAvk6grfAFyJ6IvWlSkfZ5T9ozC6xWw3Fj1fGoSmrl0gUs46JVIw==}
     engines: {node: '>=6'}
     dev: true
+
+  /touch-pinch@1.0.1:
+    resolution: {integrity: sha512-If5caiHlfY2JBQYM8XWjOB4mwEidkYpjLXV6zx1uuama0lrbGNVxhzG0wSpaAdHduoGVtWKAQNoCLrgJDEnnfQ==}
+    dependencies:
+      dprop: 1.0.0
+      events: 1.1.1
+      gl-vec2: 1.3.0
+      mouse-event-offset: 3.0.2
+    dev: false
 
   /tr46@1.0.1:
     resolution: {integrity: sha512-dTpowEjclQ7Kgx5SdBkqRzVhERQXov8/l9Ft9dVM9fmg0W0KQSVaXX9T4i6twCPNtYiZM53lpSSUAwJbFPOHxA==}

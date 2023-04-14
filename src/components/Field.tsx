@@ -2,14 +2,14 @@ import { Component, Show } from 'solid-js'
 import {
   getField,
   updateField,
-  imageBBApiKeyExists,
-  updateImageBBApiKey,
-  clearImageBBApiKey,
-  getImageBBApiKey
+  getCloudKey,
+  updateCloudKey,
+  cloudKeyExists,
+  clearCloudKey,
+  getSettingOption
 } from '../store'
 import { FieldId } from '../types'
 import axios from 'axios'
-
 interface FieldProps {
   id: FieldId
 }
@@ -33,17 +33,17 @@ export const Field: Component<FieldProps> = ({ id }) => {
 
     if (file) {
       // Determine if file can be uploaded to ImageBB
-      let local = false
+      let local = getSettingOption('use_cloud') === 'false'
 
       // Get user API key
-      let api_key = getImageBBApiKey()
-      if (!imageBBApiKeyExists()) {
+      let api_key: string | null = getCloudKey()
+      if (!local && !cloudKeyExists()) {
         api_key = prompt("Enter your ImageBB API Key:");
         if (api_key === null || api_key === '') {
           local = true;
-          clearImageBBApiKey()
+          clearCloudKey()
         } else {
-          updateImageBBApiKey(api_key)
+          updateCloudKey(api_key)
         }
       }
 
@@ -53,7 +53,7 @@ export const Field: Component<FieldProps> = ({ id }) => {
         let body = new FormData();
         body.set('key', api_key as string);
         body.append('image', file);
-        axios.post('https://api.imgbb.com/1/upload', body).then(res => {
+        axios.post(getSettingOption('cloud_host'), body).then(res => {
           updateField(id, { label: file.name, imagesrc: res.data.data.url, isLocal: false })
         })
         .catch(err => {

@@ -1,9 +1,19 @@
-import { Component } from 'solid-js'
+import { Component, createEffect, onMount } from 'solid-js'
 import { Cursor } from './Cursor'
 import { Label } from './Label'
-import { fields } from '../store'
+import { fields, getSettingOption, setSettingOption, settings } from '../store'
 import { Img } from './Image'
 import { FieldId } from '../types'
+import { usePinch, useDrag, useGesture } from 'solid-gesture'
+
+interface SimulatedMouseMoveEvent {
+  clientX: number,
+  clientY: number,
+  pageX: number,
+  pageY: number,
+  offsetX: number,
+  offsetY: number,
+}
 
 export const Viewer: Component = ({}) => {
   let view: HTMLDivElement | undefined
@@ -22,7 +32,102 @@ export const Viewer: Component = ({}) => {
     y: 0,
   })
 
-  function mouseMove(e: MouseEvent) {
+  let expectsTouch = $signal(false)
+
+  onMount(() => {
+    // General touch detection (https://stackoverflow.com/questions/55833326/wrong-maxtouchpoints-and-ontouchstart-in-document-in-chrome-mobile-emulati/67909182#67909182)
+    // Bug in FireFox+Windows 10, navigator.maxTouchPoints is incorrect when script is running inside frame.
+    // TBD: report to bugzilla.
+    const navigator = (window.top || window).navigator;
+    const maxTouchPoints = Number.isFinite(navigator.maxTouchPoints) ? navigator.maxTouchPoints : navigator.msMaxTouchPoints;
+    if (Number.isFinite(maxTouchPoints)) {
+        // Windows 10 system reports that it supports touch, even though it acutally doesn't (ignore msMaxTouchPoints === 256).
+        if (maxTouchPoints > 0 && maxTouchPoints !== 256) {
+            expectsTouch = true;
+            return;
+        }
+    }
+    else if ('ontouchstart' in window) {
+        expectsTouch = true;
+        return;
+    }
+  })
+
+  createEffect(() => {
+    if (expectsTouch) {
+      setSettingOption('touchscreen', 'true')
+    } else {
+      setSettingOption('touchscreen', 'false')
+    }
+  }, [expectsTouch]);
+
+
+  function simulateMouseMovement(e: TouchEvent) {
+    if (!view || !content) return
+
+    const {
+      left: contentOffsetLeft,
+      top: contentOffsetTop,
+    } = view.getBoundingClientRect()
+
+    const mouseEvent: SimulatedMouseMoveEvent = {
+      clientX: e.touches[0].clientX,
+      clientY: e.touches[0].clientY,
+      pageX: e.touches[0].pageX,
+      pageY: e.touches[0].pageY,
+      offsetX: e.touches[0].clientX - contentOffsetLeft,
+      offsetY: e.touches[0].clientY - contentOffsetTop,
+    }
+
+    if (e.touches.length == 1) {
+      mouseMove(mouseEvent)
+    }
+  }
+  const binders = useGesture(
+    {
+      onDrag: ({ active, delta, touches, event}) => {
+        if (touches === 1) {
+          simulateMouseMovement(event as TouchEvent)
+        }
+        if (touches === 2 && active) {
+          contentTranslate = {
+            x: contentTranslate.x + delta[0] / zoomLevel,
+            y: contentTranslate.y + delta[1] / zoomLevel,
+          }
+        }
+      },
+      onPinch: ({ active, offset: [scale], pinching, touches}) => {
+        if (touches === 2 && active && pinching) {
+          zoomLevel = scale;
+          return;
+        }
+      }
+    }, {
+      eventOptions: {
+        passive: false,
+      },
+      drag: {
+        filterTaps: true,
+        threshold: 10,
+        pointer: { touch: true },
+      },
+      pinch: {
+        pointer: { touch: true },
+      }
+    })
+
+    const noPWABinders = useDrag(({ active, delta, touches, event }) => {
+      if (touches === 1) {
+        simulateMouseMovement(event as TouchEvent)
+      }
+    }, {
+      eventOptions: {
+        passive: false,
+      },
+      pointer: { touch: true }
+    })
+
+  function mouseMove(e: MouseEvent | SimulatedMouseMoveEvent) {
     if (!view || !content) return
 
     let viewWidth = view.clientWidth
@@ -54,17 +159,17 @@ export const Viewer: Component = ({}) => {
   }
 
   function zoom(direction: number) {
-    zoomLevel = direction > 0 ? zoomLevel / 1.25 : zoomLevel * 1.25
+    zoomLevel *= Math.exp(direction * -0.1)
   }
 
   function wheel(e: WheelEvent) {
     e.preventDefault()
     const direction = Math.sign(e.deltaY) // 1 or -1
-
     zoom(direction)
   }
 
   function mouseDown() {
+    if (expectsTouch) return
     isDragging = true
   }
 
@@ -83,6 +188,7 @@ export const Viewer: Component = ({}) => {
       bottomRight: { left: contentOffsetLeftPerc, top: contentOffsetTopPerc },
     }[fieldId])
 
+
   return (
     <>
       <div
@@ -93,9 +199,12 @@ export const Viewer: Component = ({}) => {
         onMouseUp={mouseUp}
         onMouseMove={mouseMove}
         onWheel={wheel}
+        {...((getSettingOption('pwa_mounted') === 'true' && expectsTouch) ? binders() : noPWABinders())}
       >
         <div class="contents pointer-events-none select-none">
-          <$for each={ActiveFields}>{(field) => <Label position={field.id}>{field.label}</Label>}</$for>
+          <$for each={ActiveFields}>{(field) => <Label position={field.id} clip={{
+            x: 100 - ((viewOffsetLeftPerc / 100) * (view?.clientWidth || 1) - 6) / (view?.clientWidth || 1) * 100,
+          }}>{field.label}</Label>}</$for>
           <Label position="bottomCenter" class="text-xs">
             {(zoomLevel * 100).toFixed(0)}%
             {/* | {-contentTranslate().x.toFixed(0)}x {contentTranslate().y.toFixed(0)}y */}

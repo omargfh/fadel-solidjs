@@ -33,31 +33,74 @@ const [fields, updateFields] = createStore<IFields>([
   }
 ])
 
-const [ibbApiParams, updateIbbApiParams] = createStore<IBBAPIParams>({ api_key: null });
+const getField = (fieldId: FieldId) => {
+  return fields.find((field) => field.id === fieldId)!
+}
 
-const getImageBBApiKey = () => {
-  if (localStorage.getItem('fadel-imagebb-api-key') !== null) {
-    updateIbbApiParams({ api_key: localStorage.getItem('fadel-imagebb-api-key')! });
+const hasLocalFiles = () => {
+  return fields.some((field) => field.isLocal)
+}
+
+const updateField = (fieldId: FieldId, value: Partial<IField>) => {
+  updateFields((field) => field.id === fieldId, value)
+}
+
+// Settings Store
+type Settings = Record<string, string>
+const [settings, updateSettings] = createStore<Settings>({
+  'initialized': 'false',
+  'touchscreen': 'false',
+  'use_cloud': 'true',
+  'cloud_key': '',
+  'cloud_host': 'https://api.imgbb.com/1/upload',
+  'pwa_mounted': 'false'
+})
+const saveSettings = () => {
+  // Save to localstorage
+  localStorage.setItem('fadel-web-settings', JSON.stringify({...settings, 'updated_at': new Date().toISOString()}))
+}
+const loadSettings = () => {
+  try {
+    const settings = JSON.parse(localStorage.getItem('fadel-web-settings') || '{}')
+    updateSettings(settings)
   }
-  return ibbApiParams.api_key;
-}
-
-const imageBBApiKeyExists = () => {
-  if (localStorage.getItem('fadel-imagebb-api-key') !== null) {
-    updateIbbApiParams({ api_key: localStorage.getItem('fadel-imagebb-api-key')! });
-    return true;
+  catch (e) {
+    console.error('Error loading settings', e)
   }
-  return ibbApiParams.api_key !== null && ibbApiParams.api_key !== '';
 }
 
-const updateImageBBApiKey = (apiKey: string) => {
-  updateIbbApiParams({ api_key: apiKey });
-  localStorage.setItem('fadel-imagebb-api-key', apiKey);
+const setSettingOption = (key: string, value: string) => {
+  if (!settings['initialized']) {
+    loadSettings()
+  }
+  updateSettings({ [key]: value })
+  saveSettings()
 }
 
-const clearImageBBApiKey = () => {
-  updateIbbApiParams({ api_key: null });
-  localStorage.removeItem('fadel-imagebb-api-key');
+const getSettingOption = (key: string) => {
+  return settings[key]
+}
+
+
+const getCloudKey = () => {
+  return settings['cloud_key']
+}
+
+const cloudKeyExists = () => {
+  const cloud_key = settings['cloud_key']
+  return cloud_key !== null && cloud_key !== '';
+}
+
+const updateCloudKey = (apiKey: string) => {
+  setSettingOption('cloud_key', apiKey)
+}
+
+const updateCloudHost = (host: string) => {
+  setSettingOption('cloud_host', host)
+}
+
+const clearCloudKey = () => {
+  setSettingOption('cloud_key', '')
 }
 
 onMount(() => {
@@ -72,18 +115,23 @@ onMount(() => {
       console.log("Couldn't load fields: ", e)
     }
   }
+
+  // Load settings
+  loadSettings()
 })
 
-const getField = (fieldId: FieldId) => {
-  return fields.find((field) => field.id === fieldId)!
-}
 
-const hasLocalFiles = () => {
-  return fields.some((field) => field.isLocal)
-}
 
-const updateField = (fieldId: FieldId, value: Partial<IField>) => {
-  updateFields((field) => field.id === fieldId, value)
+export {
+  fields,
+  getField,
+  hasLocalFiles,
+  updateField,
+  clearCloudKey,
+  setSettingOption,
+  getSettingOption,
+  getCloudKey,
+  cloudKeyExists,
+  updateCloudKey,
+  settings
 }
-
-export { fields, getField, hasLocalFiles, updateField, updateImageBBApiKey, imageBBApiKeyExists, clearImageBBApiKey, getImageBBApiKey }
