@@ -53,6 +53,21 @@ const App: Component = () => {
     }
   }
 
+  const keyMapBinder = () => {
+    const keyMap: Record<string, CallableFunction> = {
+      'KeyF': () => { expectsTouch = true }, // Force touch mode
+    }
+    const keyUp = (e: KeyboardEvent) => {
+      e.stopImmediatePropagation()
+      if (e.code in keyMap) {
+        keyMap[e.code]()
+      }
+    }
+    return {
+      onkeyup: keyUp
+    }
+  }
+
   onMount(() => {
     // Detect PWA
     const androidCondition = window.matchMedia('(display-mode: standalone)').matches
@@ -68,6 +83,7 @@ const App: Component = () => {
   return (
     <div id="app-controller"
       {...fileDragBinder()}
+      {...keyMapBinder()}
     >
       <Show when={areFilesBeingDragged}>
         <div class="w-screen h-screen absolute bg-white bg-opacity-10 h-full z-100 top-0 left-0 flex flex-col justify-center place-content-center items-center">

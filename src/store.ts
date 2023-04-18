@@ -53,14 +53,9 @@ const addToField = async (fieldId: FieldId, file: File) => {
 
     // Get user API key
     let api_key: string | null = getCloudKey()
-    if (!local && !cloudKeyExists()) {
-      api_key = prompt("Enter your ImageBB API Key:");
-      if (api_key === null || api_key === '') {
-        local = true;
-        clearCloudKey()
-      } else {
-        updateCloudKey(api_key)
-      }
+    if (api_key === null || api_key === '') {
+      local = true;
+      clearCloudKey()
     }
 
     if (!local) {

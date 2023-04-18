@@ -1,4 +1,4 @@
-import { Component, Show } from 'solid-js'
+import { Component, createEffect, createSignal, Show } from 'solid-js'
 import {
   getField,
   updateField,
@@ -11,6 +11,7 @@ import {
 } from '../store'
 import { FieldId } from '../types'
 import axios from 'axios'
+import { Prompt } from './Prompt'
 interface FieldProps {
   id: FieldId
 }
@@ -19,6 +20,9 @@ export const Field: Component<FieldProps> = ({ id }) => {
   const field = getField(id)
   let fileInputRef: HTMLInputElement | undefined
   let isUploading = $signal(false)
+
+  let [isPrompting, setIsPrompting] = createSignal(false)
+  let [promptValue, setPromptValue] = createSignal(getCloudKey() || '')
 
   const openFilePicker = () => {
     if (fileInputRef) fileInputRef.click()
@@ -33,6 +37,16 @@ export const Field: Component<FieldProps> = ({ id }) => {
     const file = e.currentTarget.files?.[0]
     if (file) {
       isUploading = true
+      setPromptValue(getCloudKey() || '')
+      if (getSettingOption('use_cloud') === 'true' && !cloudKeyExists()) {
+        setIsPrompting(true)
+        await new Promise(async (resolve) => {
+          while (isPrompting()) {
+            await new Promise((r) => setTimeout(r, 100))
+          }
+          resolve(0)
+        });
+      }
       await addToField(id, file)
       isUploading = false
     }
@@ -42,8 +56,25 @@ export const Field: Component<FieldProps> = ({ id }) => {
     updateField(id, { label: '', imagesrc: '', isLocal: false })
   }
 
+  createEffect(() => {
+    if (promptValue() === '') {
+      clearCloudKey()
+    } else {
+      updateCloudKey(promptValue())
+    }
+  }, [promptValue])
+
   return (
     <>
+      <Show when={isPrompting()}>
+        <Prompt
+          message="Enter your Cloud API Key"
+          value={promptValue()}
+          setValue={setPromptValue}
+          isPrompting={isPrompting}
+          setIsPrompting={setIsPrompting}
+        />
+      </Show>
       <div>
         <label for={field.name} class="mb-2 text-xs uppercase text-gray-300 flex items-center">
           <img slot="icon" class="mr-1 w-6 h-6" src={`icons/${id}.svg`} width="24" alt="" />
